@@ -13,9 +13,6 @@ RUN apt-get update && \
 # Install Python packages
 RUN pip3 install --no-cache-dir numpy pillow lxml fastapi
 
-# Create necessary directories
-RUN mkdir -p /app/assets/xml /app/assets/maps /app/assets/thumbs /app/uploads
-
 # Install Node dependencies
 COPY package*.json ./
 COPY prisma ./prisma
@@ -27,6 +24,10 @@ RUN npm run prisma:gen
 
 # Build the application (e.g., TypeScript compilation)
 COPY . .
+
+# Create necessary directories
+RUN mkdir -p /app/assets/xml /app/assets/maps /app/assets/thumbs /app/uploads
+
 RUN npm run build
 
 # --- STAGE 2: Production Run stage ---
