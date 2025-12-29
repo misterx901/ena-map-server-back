@@ -65,7 +65,7 @@ export default class Server {
         origin: '*',
       }),
     );
-    this.express.use('/image/', express.static('./assets/img'));
+this.express.use('/image', express.static(path.join(process.cwd(), 'assets', 'img')));
     dotenv.config();
   }
 
