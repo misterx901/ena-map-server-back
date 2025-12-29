@@ -4,7 +4,7 @@ import { CrudService } from './CrudService';
 import { scriptReader } from '../utils/scriptReader';
 import fs from 'fs';
 import path from 'path';
-import {  groupMapRepositoryByIdMap } from '../repository/GroupMapRepository';
+import { groupMapRepositoryByIdMap } from '../repository/GroupMapRepository';
 import { userMapRepository } from '../repository/UserMapRepository';
 
 class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
@@ -17,7 +17,7 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
   }
 
 
-  async saveXmlFile(data: any) {
+   async saveXmlFile(data: any) {
     const pathName = path.resolve(
       __dirname,
       '../../',
@@ -31,11 +31,11 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
     return await scriptReader.convertXmlToJson(data);
   }
 
-  async deleteOldFileXml(data: any) {
+  async deleteOldFileXml(fileName: string) {
     const pathName = path.resolve(
       __dirname,
       '../../',
-      `assets/xml/${data.fileName.toLowerCase().replace(' ', '-')}.xml`,
+      `assets/xml/${fileName.toLowerCase().replace(' ', '-')}.xml`,
     );
 
     fs.unlinkSync(pathName);
@@ -47,12 +47,12 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
       url: data.url,
     }
 
-    if(data.new_file === 'true') {
-      this.deleteOldFileXml(data.last_file_name)
-      this.saveXmlFile({ name: data.files[0].name,  file: data.files[0] })
+    if (data.new_file === 'true' && data.last_file_name) {
+      this.deleteOldFileXml(data.last_file_name);
+      this.saveXmlFile({ name: data.files[0].name, file: data.files[0] })
       const mapJson = await this.convertXmlFile({ name: data.files[0].name, minify: true, file: data.files[0] });
 
-      if(!mapJson) {
+      if (!mapJson) {
         throw new Error('Failed to convert JSON');
       }
 
@@ -62,7 +62,7 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
 
 
     return mapRepository.update(id, newData);
-    
+
   }
 
   override async create(data: CreateMapConvert): Promise<any> {
@@ -72,19 +72,19 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
       id_owner: parseInt(`${data.id_owner}`),
     }
 
-      this.saveXmlFile({ name: data.files[0].name,  file: data.files[0] })
-      const mapJson = await this.convertXmlFile({ name: data.files[0].name, minify: true, file: data.files[0] });
+    this.saveXmlFile({ name: data.files[0].name, file: data.files[0] })
+    const mapJson = await this.convertXmlFile({ name: data.files[0].name, minify: true, file: data.files[0] });
 
-      if(!mapJson) {
-        throw new Error('Failed to convert JSON');
-      }
+    if (!mapJson) {
+      throw new Error('Failed to convert JSON');
+    }
 
     newData.tag = JSON.stringify(mapJson);
     newData.thumb_url = data.files[0].name;
-    
+
     return mapRepository.create(newData);
   }
- 
+
   override async delete(id:number):Promise<any> {
 
    const mapSelected = await mapRepository.getById(id);
@@ -103,7 +103,7 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
     const mapResponse = await mapRepository.getById(idMapa);
 
     if (mapResponse) {
-     
+      
       const pathName = path.resolve(
         __dirname,
         '../../',
@@ -159,13 +159,13 @@ class MapService extends CrudService<MapDTO, CreateMapDTO, UpdateMapDTO> {
     }
   }
 
-  
+
   async findAllPaged(page: string, limit: string, search: string): Promise<any | null> {
     const users = await mapRepository.getAllPaged(page, limit, search);
     const count = await mapRepository.countAll();
 
     const take = limit ? Number(limit) : users.length;
-    return { data: users, limit: take, page: Number(page), count};
+    return { data: users, limit: take, page: Number(page), count };
   }
 }
 
